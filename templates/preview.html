@@ -170,22 +170,46 @@
     align-items: center;
         }
 
-         .back-button {
-    display: inline-block;
-    padding: 13px 24px;
-    background: #64748b;
-    color: white;
+         .bottom-actions {
+    margin-top: 26px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.back-button,
+.generate-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 190px;
+    padding: 14px 24px;
     border: none;
-    border-radius: 14px;
+    border-radius: 16px;
     font-size: 16px;
     font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 8px 18px rgba(100, 116, 139, 0.22);
     text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
+}
+
+.back-button {
+    background: #e2e8f0;
+    color: #334155;
 }
 
 .back-button:hover {
-    background: #475569;
+    background: #cbd5e1;
+}
+
+.generate-button {
+    background: #1f4e79;
+    color: white;
+}
+
+.generate-button:hover {
+    background: #173b5c;
 }
 		
     </style>
@@ -294,13 +318,15 @@
                 </tbody>
             </table>
 
-            <div class="button-row split-buttons">
-                <a class="back-button" href="{{ url_for('index') }}">
-                    ← Back to Main Page
-                </a>
+            <div class="bottom-actions">
+    <a class="back-button" href="{{ url_for('index') }}">
+        ← Back to Main Page
+    </a>
 
-                <button type="submit">Generate Excel</button>
-            </div>
+    <button class="generate-button" type="submit">
+        Generate Excel
+    </button>
+</div>
         </form>
 
         <div class="footer-note">
