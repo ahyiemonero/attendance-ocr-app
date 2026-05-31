@@ -26,14 +26,15 @@
             text-align: center;
             color: #1f4e79;
             margin-top: 0;
-            margin-bottom: 18px;
-            letter-spacing: 1px;
+            margin-bottom: 12px;
+            letter-spacing: 3px;
         }
 
         .subtext {
             text-align: center;
             color: #64748b;
-            margin-bottom: 22px;
+            margin-bottom: 28px;
+            letter-spacing: 1px;
         }
 
         table {
@@ -116,6 +117,7 @@
             max-width: 130px;
             margin: 0 auto;
             word-break: break-word;
+            line-height: 1.2;
         }
 
         .ocr-fail {
@@ -127,28 +129,6 @@
             color: #b91c1c;
             font-size: 12px;
             font-weight: 700;
-        }
-
-        .button-row {
-            margin-top: 22px;
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        button {
-            padding: 13px 24px;
-            background: #1f4e79;
-            color: white;
-            border: none;
-            border-radius: 14px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 8px 18px rgba(31, 78, 121, 0.22);
-        }
-
-        button:hover {
-            background: #173b5c;
         }
 
         .employee-select {
@@ -165,53 +145,79 @@
 
         .site-input {
             min-width: 260px;
-        .split-buttons {
-    justify-content: space-between;
-    align-items: center;
         }
 
-         .bottom-actions {
-    margin-top: 26px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-}
+        .bottom-bar {
+            margin-top: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+        }
 
-.back-button,
-.generate-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 190px;
-    padding: 14px 24px;
-    border: none;
-    border-radius: 16px;
-    font-size: 16px;
-    font-weight: 700;
-    text-decoration: none;
-    cursor: pointer;
-    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
-}
+        .footer-note {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+        }
 
-.back-button {
-    background: #e2e8f0;
-    color: #334155;
-}
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
 
-.back-button:hover {
-    background: #cbd5e1;
-}
+        .back-button,
+        .generate-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 190px;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
+            box-sizing: border-box;
+        }
 
-.generate-button {
-    background: #1f4e79;
-    color: white;
-}
+        .back-button {
+            background: #e2e8f0;
+            color: #334155;
+        }
 
-.generate-button:hover {
-    background: #173b5c;
-}
-		
+        .back-button:hover {
+            background: #cbd5e1;
+        }
+
+        .generate-button {
+            background: #1f4e79;
+            color: white;
+        }
+
+        .generate-button:hover {
+            background: #173b5c;
+        }
+
+        @media (max-width: 900px) {
+            .bottom-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .action-buttons {
+                justify-content: space-between;
+            }
+
+            .back-button,
+            .generate-button {
+                width: 100%;
+                min-width: unset;
+            }
+        }
     </style>
 </head>
 <body>
@@ -225,7 +231,7 @@
             <input type="hidden" name="month_year" value="{{ month_year }}">
             <input type="hidden" name="site" value="{{ site }}">
             <input type="hidden" name="row_count" value="{{ rows|length }}">
-			<input type="hidden" name="job_id" value="{{ job_id if job_id else '' }}">
+            <input type="hidden" name="job_id" value="{{ job_id if job_id else '' }}">
 
             <table>
                 <thead>
@@ -318,20 +324,22 @@
                 </tbody>
             </table>
 
-            <div class="bottom-actions">
-    <a class="back-button" href="{{ url_for('index') }}">
-        ← Back to Main Page
-    </a>
+            <div class="bottom-bar">
+                <div class="footer-note">
+                    Created by Khairil Khalis @ qailab
+                </div>
 
-    <button class="generate-button" type="submit">
-        Generate Excel
-    </button>
-</div>
+                <div class="action-buttons">
+                    <a class="back-button" href="{{ url_for('index') }}">
+                        ← Back to Main Page
+                    </a>
+
+                    <button class="generate-button" type="submit">
+                        Generate Excel
+                    </button>
+                </div>
+            </div>
         </form>
-
-        <div class="footer-note">
-            Created by Khairil Khalis @ qailab
-        </div>
     </div>
 </div>
 
