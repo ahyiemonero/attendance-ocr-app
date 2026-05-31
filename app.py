@@ -1034,20 +1034,20 @@ def generate_excel():
 
     job_id = request.form.get("job_id", "").strip()
 
-if job_id and job_id in JOBS:
-    job = JOBS[job_id]
+    if job_id and job_id in JOBS:
+        job = JOBS[job_id]
 
-    time_in_sorted = sorted(
-        job["time_in_records"],
-        key=lambda x: x["detected_datetime"] or datetime.max
-    )
+        time_in_sorted = sorted(
+            job["time_in_records"],
+            key=lambda x: x["detected_datetime"] or datetime.max
+        )
 
-    time_out_sorted = sorted(
-        job["time_out_records"],
-        key=lambda x: x["detected_datetime"] or datetime.max
-    )
-else:
-    time_in_sorted, time_out_sorted = get_sorted_records()
+        time_out_sorted = sorted(
+            job["time_out_records"],
+            key=lambda x: x["detected_datetime"] or datetime.max
+        )
+    else:
+        time_in_sorted, time_out_sorted = get_sorted_records()
 
     wb = Workbook()
     ws = wb.active
