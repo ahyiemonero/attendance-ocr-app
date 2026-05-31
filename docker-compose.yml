@@ -6,7 +6,11 @@ services:
     ports:
       - "7869:7869"
     volumes:
-      - ./uploads:/app/uploads
-      - ./generated:/app/generated
-      - ./attendance.db:/app/attendance.db
-      - ./static:/app/static
+      - attendance_uploads:/app/uploads
+      - attendance_generated:/app/generated
+      - attendance_data:/app/data
+
+volumes:
+  attendance_uploads:
+  attendance_generated:
+  attendance_data:

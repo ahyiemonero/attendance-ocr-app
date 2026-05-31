@@ -27,11 +27,13 @@ UPLOAD_TIME_IN = os.path.join(BASE_DIR, "uploads", "time_in")
 UPLOAD_TIME_OUT = os.path.join(BASE_DIR, "uploads", "time_out")
 GENERATED_DIR = os.path.join(BASE_DIR, "generated")
 LOGO_PATH = os.path.join(BASE_DIR, "static", "henderson_logo.png")
-DB_PATH = os.path.join(BASE_DIR, "attendance.db")
+DATA_DIR = os.path.join(BASE_DIR, "data")
+DB_PATH = os.path.join(DATA_DIR, "attendance.db")
 
 os.makedirs(UPLOAD_TIME_IN, exist_ok=True)
 os.makedirs(UPLOAD_TIME_OUT, exist_ok=True)
 os.makedirs(GENERATED_DIR, exist_ok=True)
+os.makedirs(DATA_DIR, exist_ok=True)
 
 # Windows Tesseract path.
 # Later on Ubuntu, comment this line.

@@ -19,7 +19,7 @@ RUN pip install --no-cache-dir gunicorn
 
 COPY . .
 
-RUN mkdir -p uploads/time_in uploads/time_out generated static
+RUN mkdir -p uploads/time_in uploads/time_out generated static data
 
 EXPOSE 7869
 
