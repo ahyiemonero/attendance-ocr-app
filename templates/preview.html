@@ -165,7 +165,29 @@
 
         .site-input {
             min-width: 260px;
+        .split-buttons {
+    justify-content: space-between;
+    align-items: center;
         }
+
+         .back-button {
+    display: inline-block;
+    padding: 13px 24px;
+    background: #64748b;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(100, 116, 139, 0.22);
+    text-decoration: none;
+}
+
+.back-button:hover {
+    background: #475569;
+}
+		
     </style>
 </head>
 <body>
@@ -272,7 +294,11 @@
                 </tbody>
             </table>
 
-            <div class="button-row">
+            <div class="button-row split-buttons">
+                <a class="back-button" href="{{ url_for('index') }}">
+                    ← Back to Main Page
+                </a>
+
                 <button type="submit">Generate Excel</button>
             </div>
         </form>
