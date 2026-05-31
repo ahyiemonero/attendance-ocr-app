@@ -2,10 +2,11 @@ import os
 import re
 import uuid
 import sqlite3
+import threading
 from datetime import datetime
 from dateutil import parser
 
-from flask import Flask, render_template, request, redirect, url_for, send_file, send_from_directory, abort
+from flask import Flask, render_template, request, redirect, url_for, send_file, send_from_directory, abort, jsonify
 from werkzeug.utils import secure_filename
 
 from PIL import Image, ImageEnhance, ImageFilter
@@ -44,6 +45,7 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 
 TIME_IN_RECORDS = []
 TIME_OUT_RECORDS = []
+JOBS = {}
 
 EMPLOYEES_SEED = [
     ("15829A", "SAMUEL ONG KAI WEN"),
@@ -679,6 +681,104 @@ def process_uploads(files, upload_type):
     records.sort(key=lambda x: x["detected_datetime"] or datetime.max)
     return records
 
+def process_saved_files(saved_files, upload_type, job_id, start_progress, end_progress):
+    records = []
+    total_files = len(saved_files)
+
+    for index, saved in enumerate(saved_files):
+        file_path = saved["file_path"]
+        original_filename = saved["original_filename"]
+        stored_filename = saved["stored_filename"]
+
+        filename_dt = extract_datetime_from_filename(original_filename)
+
+        detected_time = None
+        ocr_text = ""
+        display_date = ""
+        display_time = ""
+        sort_dt = None
+        source_used = ""
+
+        if filename_dt:
+            detected_time, ocr_text = ocr_time_only_fast(file_path, filename_dt=filename_dt)
+
+            display_date = format_date(filename_dt)
+
+            if detected_time:
+                final_dt = datetime.combine(filename_dt.date(), detected_time)
+                display_time = format_time(final_dt)
+                sort_dt = final_dt
+                source_used = "OCR_TIME"
+            else:
+                display_time = ""
+                sort_dt = filename_dt
+                source_used = "OCR_FAILED_TIME_BLANK"
+                ocr_text = ocr_text or "OCR failed. Time left blank for manual correction."
+        else:
+            display_date = ""
+            display_time = ""
+            sort_dt = datetime.max
+            source_used = "FILENAME_FAILED"
+            ocr_text = "Filename date could not be detected. Manual entry required."
+
+        records.append({
+            "id": uuid.uuid4().hex,
+            "original_filename": original_filename,
+            "stored_filename": stored_filename,
+            "upload_type": upload_type,
+            "file_path": file_path,
+            "filename_datetime": filename_dt,
+            "detected_datetime": sort_dt,
+            "date": display_date,
+            "time": display_time,
+            "ocr_text": ocr_text,
+            "source_used": source_used,
+        })
+
+        if total_files > 0:
+            progress_range = end_progress - start_progress
+            progress = start_progress + int(((index + 1) / total_files) * progress_range)
+            JOBS[job_id]["progress"] = progress
+            JOBS[job_id]["message"] = f"Processing {upload_type.replace('_', ' ').upper()} photos: {index + 1}/{total_files}"
+
+    records.sort(key=lambda x: x["detected_datetime"] or datetime.max)
+    return records
+
+
+def process_job_background(job_id, saved_time_in_files, saved_time_out_files):
+    try:
+        JOBS[job_id]["message"] = "Processing TIME IN photos..."
+        JOBS[job_id]["progress"] = 5
+
+        time_in_records = process_saved_files(
+            saved_time_in_files,
+            "time_in",
+            job_id,
+            5,
+            50
+        )
+
+        JOBS[job_id]["message"] = "Processing TIME OUT photos..."
+        JOBS[job_id]["progress"] = 50
+
+        time_out_records = process_saved_files(
+            saved_time_out_files,
+            "time_out",
+            job_id,
+            50,
+            95
+        )
+
+        JOBS[job_id]["time_in_records"] = time_in_records
+        JOBS[job_id]["time_out_records"] = time_out_records
+        JOBS[job_id]["progress"] = 100
+        JOBS[job_id]["message"] = "Processing completed."
+        JOBS[job_id]["status"] = "done"
+
+    except Exception as e:
+        JOBS[job_id]["status"] = "error"
+        JOBS[job_id]["error"] = str(e)
+        JOBS[job_id]["message"] = f"Error: {str(e)}"
 
 def get_sorted_records():
     time_in_sorted = sorted(
@@ -696,8 +796,6 @@ def get_sorted_records():
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    global TIME_IN_RECORDS, TIME_OUT_RECORDS
-
     if request.method == "POST":
         site = request.form.get("site", "").strip()
         month_year = request.form.get("month_year", "").strip()
@@ -705,10 +803,49 @@ def index():
         time_in_files = request.files.getlist("time_in_photos")
         time_out_files = request.files.getlist("time_out_photos")
 
-        TIME_IN_RECORDS = process_uploads(time_in_files, "time_in")
-        TIME_OUT_RECORDS = process_uploads(time_out_files, "time_out")
+        job_id = uuid.uuid4().hex
 
-        return redirect(url_for("preview", site=site, month_year=month_year))
+        JOBS[job_id] = {
+            "status": "processing",
+            "progress": 0,
+            "message": "Starting upload processing...",
+            "site": site,
+            "month_year": month_year,
+            "time_in_records": [],
+            "time_out_records": [],
+            "error": None,
+        }
+
+        # Save files first while request is active
+        saved_time_in_files = []
+        saved_time_out_files = []
+
+        for file in time_in_files:
+            if file and allowed_file(file.filename):
+                file_path, original_filename, stored_filename = save_uploaded_file(file, UPLOAD_TIME_IN)
+                saved_time_in_files.append({
+                    "file_path": file_path,
+                    "original_filename": original_filename,
+                    "stored_filename": stored_filename,
+                })
+
+        for file in time_out_files:
+            if file and allowed_file(file.filename):
+                file_path, original_filename, stored_filename = save_uploaded_file(file, UPLOAD_TIME_OUT)
+                saved_time_out_files.append({
+                    "file_path": file_path,
+                    "original_filename": original_filename,
+                    "stored_filename": stored_filename,
+                })
+
+        thread = threading.Thread(
+            target=process_job_background,
+            args=(job_id, saved_time_in_files, saved_time_out_files),
+            daemon=True
+        )
+        thread.start()
+
+        return redirect(url_for("processing", job_id=job_id))
 
     return render_template("index.html")
 
@@ -723,12 +860,55 @@ def uploaded_file(upload_type, filename):
 
     return send_from_directory(folder, filename)
 
+@app.route("/processing/<job_id>")
+def processing(job_id):
+    if job_id not in JOBS:
+        abort(404)
+
+    return render_template("processing.html", job_id=job_id)
+
+
+@app.route("/job_status/<job_id>")
+def job_status(job_id):
+    job = JOBS.get(job_id)
+
+    if not job:
+        return jsonify({
+            "status": "missing",
+            "progress": 0,
+            "message": "Job not found."
+        }), 404
+
+    return jsonify({
+        "status": job["status"],
+        "progress": job["progress"],
+        "message": job["message"],
+        "error": job["error"],
+    })
+
 @app.route("/preview", methods=["GET"])
 def preview():
-    site = request.args.get("site", "")
-    month_year = request.args.get("month_year", "")
+    job_id = request.args.get("job_id")
 
-    time_in_sorted, time_out_sorted = get_sorted_records()
+    if job_id:
+        job = JOBS.get(job_id)
+        if not job:
+            abort(404)
+
+        site = job["site"]
+        month_year = job["month_year"]
+        time_in_sorted = sorted(
+            job["time_in_records"],
+            key=lambda x: x["detected_datetime"] or datetime.max
+        )
+        time_out_sorted = sorted(
+            job["time_out_records"],
+            key=lambda x: x["detected_datetime"] or datetime.max
+        )
+    else:
+        site = request.args.get("site", "")
+        month_year = request.args.get("month_year", "")
+        time_in_sorted, time_out_sorted = get_sorted_records()
 
     max_rows = max(len(time_in_sorted), len(time_out_sorted))
 

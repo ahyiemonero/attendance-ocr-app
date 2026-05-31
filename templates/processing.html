@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Processing Attendance</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #eef5fb, #f8fafc);
+            color: #1f2937;
+        }
+
+        .page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 620px;
+            background: white;
+            border-radius: 24px;
+            padding: 36px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+            text-align: center;
+        }
+
+        h1 {
+            color: #1f4e79;
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+
+        .message {
+            color: #64748b;
+            margin-bottom: 24px;
+            font-size: 16px;
+        }
+
+        .progress-wrap {
+            width: 100%;
+            background: #e2e8f0;
+            border-radius: 999px;
+            overflow: hidden;
+            height: 24px;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #1f4e79;
+            border-radius: 999px;
+            transition: width 0.3s ease;
+        }
+
+        .percent {
+            margin-top: 14px;
+            font-weight: 700;
+            color: #1f4e79;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 24px;
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <div class="card">
+        <h1>Processing Photos</h1>
+        <div class="message" id="message">Starting...</div>
+
+        <div class="progress-wrap">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="percent" id="percent">0%</div>
+
+        <div class="footer-note">
+            Created by Khairil Khalis @ qailab
+        </div>
+    </div>
+</div>
+
+<script>
+const jobId = "{{ job_id }}";
+
+async function checkStatus() {
+    const response = await fetch(`/job_status/${jobId}`);
+    const data = await response.json();
+
+    const progress = data.progress || 0;
+
+    document.getElementById("progressBar").style.width = progress + "%";
+    document.getElementById("percent").innerText = progress + "%";
+    document.getElementById("message").innerText = data.message || "Processing...";
+
+    if (data.status === "done") {
+        window.location.href = `/preview?job_id=${jobId}`;
+        return;
+    }
+
+    if (data.status === "error") {
+        document.getElementById("message").innerText = data.error || "Processing failed.";
+        return;
+    }
+
+    setTimeout(checkStatus, 2000);
+}
+
+checkStatus();
+</script>
+
+</body>
+</html>
