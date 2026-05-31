@@ -937,7 +937,8 @@ def preview():
         rows=rows,
         site=site,
         month_year=month_year,
-        employees=employees
+        employees=employees,
+        job_id=job_id
     )
     
 @app.route("/employees", methods=["GET", "POST"])
@@ -1031,6 +1032,21 @@ def generate_excel():
     site = request.form.get("site", "").strip()
     row_count = int(request.form.get("row_count", 0))
 
+    job_id = request.form.get("job_id", "").strip()
+
+if job_id and job_id in JOBS:
+    job = JOBS[job_id]
+
+    time_in_sorted = sorted(
+        job["time_in_records"],
+        key=lambda x: x["detected_datetime"] or datetime.max
+    )
+
+    time_out_sorted = sorted(
+        job["time_out_records"],
+        key=lambda x: x["detected_datetime"] or datetime.max
+    )
+else:
     time_in_sorted, time_out_sorted = get_sorted_records()
 
     wb = Workbook()
