@@ -4,13 +4,34 @@ services:
     container_name: attendance-ocr
     restart: unless-stopped
     ports:
-      - "7869:7869"
+      - "127.0.0.1:7869:7869"
     volumes:
       - attendance_uploads:/app/uploads
       - attendance_generated:/app/generated
       - attendance_data:/app/data
+      - attendance_static:/app/static
+
+  attendance-cleanup:
+    image: alpine:latest
+    container_name: attendance-cleanup
+    restart: unless-stopped
+    volumes:
+      - attendance_uploads:/uploads
+      - attendance_generated:/generated
+    command: >
+      sh -c "
+      while true;
+      do
+        echo 'Running cleanup...';
+        find /uploads -type f -mmin +60 -delete;
+        find /generated -type f -mmin +60 -delete;
+        echo 'Cleanup completed';
+        sleep 1800;
+      done
+      "
 
 volumes:
   attendance_uploads:
   attendance_generated:
   attendance_data:
+  attendance_static:
