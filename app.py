@@ -35,7 +35,8 @@ os.makedirs(GENERATED_DIR, exist_ok=True)
 
 # Windows Tesseract path.
 # Later on Ubuntu, comment this line.
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+if os.name == "nt":
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 

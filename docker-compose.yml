@@ -1,0 +1,12 @@
+services:
+  attendance-ocr:
+    build: .
+    container_name: attendance-ocr
+    restart: unless-stopped
+    ports:
+      - "7869:7869"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./generated:/app/generated
+      - ./attendance.db:/app/attendance.db
+      - ./static:/app/static
