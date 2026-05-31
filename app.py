@@ -961,21 +961,126 @@ def employees_page():
 
         return redirect(url_for("employees_page"))
 
+    search = request.args.get("search", "").strip()
+    sort_by = request.args.get("sort_by", "name").strip()
+    sort_order = request.args.get("sort_order", "asc").strip().lower()
+    per_page = request.args.get("per_page", "10").strip()
+    page = request.args.get("page", "1").strip()
+
+    allowed_sort_columns = {
+        "emp_code": "emp_code",
+        "name": "name"
+    }
+
+    if sort_by not in allowed_sort_columns:
+        sort_by = "name"
+
+    if sort_order not in ["asc", "desc"]:
+        sort_order = "asc"
+
+    try:
+        per_page = int(per_page)
+    except Exception:
+        per_page = 10
+
+    if per_page not in [5, 10, 50]:
+        per_page = 10
+
+    try:
+        page = int(page)
+    except Exception:
+        page = 1
+
+    if page < 1:
+        page = 1
+
     conn = get_db_connection()
 
-    employees = conn.execute("""
-    SELECT id, emp_code, name
-    FROM employees
-    ORDER BY name ASC
-""").fetchall()
+    where_clause = ""
+    params = []
+
+    if search:
+        where_clause = "WHERE emp_code LIKE ? OR name LIKE ?"
+        search_value = f"%{search}%"
+        params.extend([search_value, search_value])
+
+    total_count = conn.execute(
+        f"SELECT COUNT(*) FROM employees {where_clause}",
+        params
+    ).fetchone()[0]
+
+    total_pages = max((total_count + per_page - 1) // per_page, 1)
+
+    if page > total_pages:
+        page = total_pages
+
+    offset = (page - 1) * per_page
+
+    order_column = allowed_sort_columns[sort_by]
+    order_direction = "ASC" if sort_order == "asc" else "DESC"
+
+    employees = conn.execute(f"""
+        SELECT id, emp_code, name
+        FROM employees
+        {where_clause}
+        ORDER BY {order_column} {order_direction}
+        LIMIT ? OFFSET ?
+    """, params + [per_page, offset]).fetchall()
 
     conn.close()
 
-    return render_template("employees.html", employees=employees)
+    return render_template(
+        "employees.html",
+        employees=employees,
+        search=search,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        per_page=per_page,
+        page=page,
+        total_pages=total_pages,
+        total_count=total_count
+    )
+
+
+@app.route("/employees/update/<int:employee_id>", methods=["POST"])
+def update_employee(employee_id):
+    emp_code = request.form.get("emp_code", "").strip()
+    name = request.form.get("name", "").strip().upper()
+
+    search = request.form.get("search", "")
+    sort_by = request.form.get("sort_by", "name")
+    sort_order = request.form.get("sort_order", "asc")
+    per_page = request.form.get("per_page", "10")
+    page = request.form.get("page", "1")
+
+    if emp_code and name:
+        conn = get_db_connection()
+        conn.execute("""
+            UPDATE employees
+            SET emp_code = ?, name = ?
+            WHERE id = ?
+        """, (emp_code, name, employee_id))
+        conn.commit()
+        conn.close()
+
+    return redirect(url_for(
+        "employees_page",
+        search=search,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        per_page=per_page,
+        page=page
+    ))
 
 
 @app.route("/employees/delete/<int:employee_id>", methods=["POST"])
 def delete_employee(employee_id):
+    search = request.form.get("search", "")
+    sort_by = request.form.get("sort_by", "name")
+    sort_order = request.form.get("sort_order", "asc")
+    per_page = request.form.get("per_page", "10")
+    page = request.form.get("page", "1")
+
     conn = get_db_connection()
     conn.execute("""
         DELETE FROM employees
@@ -984,7 +1089,14 @@ def delete_employee(employee_id):
     conn.commit()
     conn.close()
 
-    return redirect(url_for("employees_page"))
+    return redirect(url_for(
+        "employees_page",
+        search=search,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        per_page=per_page,
+        page=page
+    ))
 
 def resize_image_portrait_for_excel(image_path, max_width=120, max_height=160):
     """
