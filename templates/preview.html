@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Preview Attendance</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f3f6fb;
+            color: #1f2937;
+        }
+
+        .page {
+            padding: 24px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            overflow-x: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1f4e79;
+            margin-top: 0;
+            margin-bottom: 18px;
+            letter-spacing: 1px;
+        }
+
+        .subtext {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 22px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+            font-size: 14px;
+        }
+
+        th {
+            background: #2e75b6;
+            color: white;
+            padding: 12px 10px;
+            text-align: center;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        th:first-child {
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+
+        th:last-child {
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        td {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        td:first-child {
+            border-left: 1px solid #e2e8f0;
+            border-top-left-radius: 14px;
+            border-bottom-left-radius: 14px;
+        }
+
+        td:last-child {
+            border-right: 1px solid #e2e8f0;
+            border-top-right-radius: 14px;
+            border-bottom-right-radius: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 9px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            background: white;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2e75b6;
+            box-shadow: 0 0 0 3px rgba(46, 117, 182, 0.16);
+        }
+
+        .thumb {
+            width: 95px;
+            height: 115px;
+            object-fit: cover;
+            border-radius: 14px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+            display: block;
+            margin: 0 auto 6px auto;
+        }
+
+        .filename {
+            font-size: 11px;
+            color: #64748b;
+            max-width: 130px;
+            margin: 0 auto;
+            word-break: break-word;
+        }
+
+        .ocr-fail {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: #fee2e2;
+            color: #b91c1c;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .button-row {
+            margin-top: 22px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        button {
+            padding: 13px 24px;
+            background: #1f4e79;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(31, 78, 121, 0.22);
+        }
+
+        button:hover {
+            background: #173b5c;
+        }
+
+        .employee-select {
+            min-width: 230px;
+        }
+
+        .small-input {
+            min-width: 110px;
+        }
+
+        .name-input {
+            min-width: 230px;
+        }
+
+        .site-input {
+            min-width: 260px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <div class="card">
+        <h1>ATTENDANCE {{ month_year.upper() }}</h1>
+        <div class="subtext">{{ site }}</div>
+
+        <form method="POST" action="{{ url_for('generate_excel') }}">
+            <input type="hidden" name="month_year" value="{{ month_year }}">
+            <input type="hidden" name="site" value="{{ site }}">
+            <input type="hidden" name="row_count" value="{{ rows|length }}">
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Shift</th>
+                        <th>Date</th>
+                        <th>Photo In</th>
+                        <th>Time In</th>
+                        <th>Photo Out</th>
+                        <th>Time Out</th>
+                        <th>Employee</th>
+                        <th>Emp Code</th>
+                        <th>Name</th>
+                        <th>Site</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+
+                        <td>
+                            <input class="small-input" type="text" name="shift_{{ row.index }}" value="A">
+                        </td>
+
+                        <td>
+                            <input class="small-input" type="text" name="date_{{ row.index }}" value="{{ row.date }}">
+                        </td>
+
+                        <td>
+                            {% if row.time_in %}
+                                <img class="thumb"
+                                     src="{{ url_for('uploaded_file', upload_type=row.time_in.upload_type, filename=row.time_in.stored_filename) }}">
+                                <div class="filename">{{ row.time_in.original_filename }}</div>
+                                {% if not row.time_in.time %}
+                                    <div class="ocr-fail">OCR failed</div>
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <input class="small-input" type="text" name="time_in_{{ row.index }}" value="{{ row.time_in.time if row.time_in else '' }}">
+                        </td>
+
+                        <td>
+                            {% if row.time_out %}
+                                <img class="thumb"
+                                     src="{{ url_for('uploaded_file', upload_type=row.time_out.upload_type, filename=row.time_out.stored_filename) }}">
+                                <div class="filename">{{ row.time_out.original_filename }}</div>
+                                {% if not row.time_out.time %}
+                                    <div class="ocr-fail">OCR failed</div>
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <input class="small-input" type="text" name="time_out_{{ row.index }}" value="{{ row.time_out.time if row.time_out else '' }}">
+                        </td>
+
+                        <td>
+                            <select class="employee-select" onchange="fillEmployee(this, '{{ row.index }}')">
+                                <option value="">Select employee</option>
+                                {% for emp in employees %}
+                                    <option value="{{ emp.emp_code }}||{{ emp.name }}">
+                                        {{ emp.emp_code }} - {{ emp.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+
+                        <td>
+                            <input class="small-input" type="text" id="emp_code_{{ row.index }}" name="emp_code_{{ row.index }}">
+                        </td>
+
+                        <td>
+                            <input class="name-input" type="text" id="name_{{ row.index }}" name="name_{{ row.index }}">
+                        </td>
+
+                        <td>
+                            <input class="site-input" type="text" name="site_{{ row.index }}" value="{{ site }}">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="button-row">
+                <button type="submit">Generate Excel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function fillEmployee(selectElement, rowIndex) {
+    const value = selectElement.value;
+
+    const empCodeInput = document.getElementById("emp_code_" + rowIndex);
+    const nameInput = document.getElementById("name_" + rowIndex);
+
+    if (!value) {
+        empCodeInput.value = "";
+        nameInput.value = "";
+        return;
+    }
+
+    const parts = value.split("||");
+    const empCode = parts[0] || "";
+    const name = parts[1] || "";
+
+    empCodeInput.value = empCode;
+    nameInput.value = name;
+}
+</script>
+
+</body>
+</html>

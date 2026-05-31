@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attendance OCR</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #eef5fb, #f8fafc);
+            color: #1f2937;
+        }
+
+        .page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 720px;
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1f4e79;
+            margin-top: 0;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 28px;
+        }
+
+        label {
+            font-weight: 700;
+            display: block;
+            margin-top: 18px;
+            margin-bottom: 8px;
+            color: #334155;
+        }
+
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            box-sizing: border-box;
+            background: #f8fafc;
+            font-size: 15px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2e75b6;
+            box-shadow: 0 0 0 4px rgba(46, 117, 182, 0.14);
+            background: white;
+        }
+
+        .note {
+            background: #eef6ff;
+            padding: 14px 16px;
+            border-left: 5px solid #2e75b6;
+            border-radius: 14px;
+            margin-top: 22px;
+            color: #334155;
+            line-height: 1.5;
+        }
+
+        .button-row {
+    margin-top: 28px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+button {
+    padding: 14px 26px;
+    background: #1f4e79;
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 10px 22px rgba(31, 78, 121, 0.24);
+}
+
+button:hover {
+    background: #173b5c;
+}
+
+.manage-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 22px;
+}
+
+.secondary-button {
+    display: inline-block;
+    padding: 14px 26px;
+    background: #1f4e79;
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 10px 22px rgba(31, 78, 121, 0.24);
+    text-decoration: none;
+}
+
+.secondary-button:hover {
+    background: #173b5c;
+}
+		
+
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <div class="card">
+<h1>Attendance OCR</h1>
+<div class="subtitle">Upload photos, review timestamps, select employees, generate Excel.</div>
+
+<div class="manage-row">
+    <a class="secondary-button" href="{{ url_for('employees_page') }}">
+        Manage Employees
+    </a>
+</div>
+
+        <form method="POST" enctype="multipart/form-data">
+            <label>Month / Year</label>
+            <input type="text" name="month_year" placeholder="Example: May 2026" required>
+
+            <label>Site</label>
+            <input type="text" name="site" placeholder="Example: SUNGEI BULOH WETLAND RESERVE" required>
+
+            <label>Upload TIME IN Photos</label>
+            <input type="file" name="time_in_photos" multiple accept="image/*" required>
+
+            <label>Upload TIME OUT Photos</label>
+            <input type="file" name="time_out_photos" multiple accept="image/*" required>
+
+            <div class="note">
+                The system uses the WhatsApp filename for the date and OCR for the photo timestamp where possible.
+                Failed OCR rows can be corrected in the preview table.
+            </div>
+
+            <div class="button-row">
+                <button type="submit">Process Photos</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

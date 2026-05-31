@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #eef5fb, #f8fafc);
+            color: #1f2937;
+        }
+
+        .page {
+            padding: 32px;
+        }
+
+        .card {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+        }
+
+        h1 {
+            color: #1f4e79;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 26px;
+        }
+
+        .top-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        a {
+            color: #1f4e79;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .form-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 24px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr auto;
+            gap: 12px;
+        }
+
+        input {
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            font-size: 15px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2e75b6;
+            box-shadow: 0 0 0 4px rgba(46, 117, 182, 0.14);
+        }
+
+        button {
+            padding: 12px 20px;
+            background: #1f4e79;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(31, 78, 121, 0.20);
+        }
+
+        button:hover {
+            background: #173b5c;
+        }
+
+        .danger {
+            background: #b91c1c;
+        }
+
+        .danger:hover {
+            background: #7f1d1d;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        th {
+            background: #2e75b6;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th:first-child {
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+
+        th:last-child {
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        td {
+            background: #f8fafc;
+            padding: 14px 12px;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td:first-child {
+            border-left: 1px solid #e2e8f0;
+            border-top-left-radius: 14px;
+            border-bottom-left-radius: 14px;
+        }
+
+        td:last-child {
+            border-right: 1px solid #e2e8f0;
+            border-top-right-radius: 14px;
+            border-bottom-right-radius: 14px;
+        }
+
+        .action-form {
+            margin: 0;
+        }
+
+        @media (max-width: 700px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <div class="card">
+        <h1>Employee Management</h1>
+        <div class="subtitle">Add, update, or delete employees used in the attendance dropdown.</div>
+
+        <div class="top-actions">
+            <a href="{{ url_for('index') }}">← Back to Attendance Upload</a>
+        </div>
+
+        <div class="form-box">
+            <form method="POST" action="{{ url_for('employees_page') }}">
+                <div class="form-grid">
+                    <input type="text" name="emp_code" placeholder="Employee Code, e.g. 15829A" required>
+                    <input type="text" name="name" placeholder="Employee Name, e.g. SAMUEL ONG KAI WEN" required>
+                    <button type="submit">Add / Update</button>
+                </div>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Emp Code</th>
+                    <th>Name</th>
+                    <th style="width: 160px;">Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for emp in employees %}
+                <tr>
+                    <td>{{ emp.emp_code }}</td>
+                    <td>{{ emp.name }}</td>
+                    <td>
+                        <form class="action-form" method="POST" action="{{ url_for('delete_employee', employee_id=emp.id) }}" onsubmit="return confirm('Delete this employee?');">
+                            <button class="danger" type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
