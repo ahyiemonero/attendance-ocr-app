@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Attendance OCR</title>
+    <title>Attendance Generator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -79,66 +79,72 @@
         }
 
         .button-row {
-    margin-top: 28px;
-    display: flex;
-    justify-content: flex-end;
-}
+            margin-top: 28px;
+            display: flex;
+            justify-content: flex-end;
+        }
 
-button {
-    padding: 14px 26px;
-    background: #1f4e79;
-    color: white;
-    border: none;
-    border-radius: 16px;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 10px 22px rgba(31, 78, 121, 0.24);
-}
+        button {
+            padding: 14px 26px;
+            background: #1f4e79;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 22px rgba(31, 78, 121, 0.24);
+        }
 
-button:hover {
-    background: #173b5c;
-}
+        button:hover {
+            background: #173b5c;
+        }
 
-.manage-row {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 22px;
-}
+        .manage-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 22px;
+        }
 
-.secondary-button {
-    display: inline-block;
-    padding: 14px 26px;
-    background: #1f4e79;
-    color: white;
-    border: none;
-    border-radius: 16px;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 10px 22px rgba(31, 78, 121, 0.24);
-    text-decoration: none;
-}
+        .secondary-button {
+            display: inline-block;
+            padding: 14px 26px;
+            background: #1f4e79;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 22px rgba(31, 78, 121, 0.24);
+            text-decoration: none;
+        }
 
-.secondary-button:hover {
-    background: #173b5c;
-}
-		
+        .secondary-button:hover {
+            background: #173b5c;
+        }
 
+        .footer-note {
+            margin-top: 26px;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
 
 <div class="page">
     <div class="card">
-<h1>Attendance OCR</h1>
-<div class="subtitle">Upload photos, review timestamps, select employees, generate Excel.</div>
+        <h1>Attendance Generator</h1>
+        <div class="subtitle">Upload photos, review filename timestamps, select employees, generate Excel.</div>
 
-<div class="manage-row">
-    <a class="secondary-button" href="{{ url_for('employees_page') }}">
-        Manage Employees
-    </a>
-</div>
+        <div class="manage-row">
+            <a class="secondary-button" href="{{ url_for('employees_page') }}">
+                Manage Employees
+            </a>
+        </div>
 
         <form method="POST" enctype="multipart/form-data">
             <label>Month / Year</label>
@@ -154,16 +160,17 @@ button:hover {
             <input type="file" name="time_out_photos" multiple accept="image/*" required>
 
             <div class="note">
-                The system uses the WhatsApp filename for the date and OCR for the photo timestamp where possible.
-                Failed OCR rows can be corrected in the preview table.
+                The system uses the WhatsApp filename to capture the date and time.
+                Photos will be sorted chronologically based on the filename before generating the Excel sheet.
             </div>
 
             <div class="button-row">
                 <button type="submit">Process Photos</button>
             </div>
         </form>
+
         <div class="footer-note">
-            Created by Khairil Khalis @ qailab
+            Developed on Python by Khairil Khalis | qailab
         </div>
     </div>
 </div>
